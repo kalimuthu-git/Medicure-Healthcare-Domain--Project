@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  medicure-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medicure-healthcare
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=app.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - medicure-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: medicure-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - medicure-app
+    networks:
+      - medicure-network
+
+networks:
+  medicure-network:
+    driver: bridge

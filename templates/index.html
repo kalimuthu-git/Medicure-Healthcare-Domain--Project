@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicure - We Provide Best Healthcare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --teal: #2bbfa4;
+            --teal-dark: #1a9a85;
+            --teal-light: #e6f7f4;
+            --white: #ffffff;
+            --dark: #1a2332;
+            --gray: #6b7280;
+            --light-gray: #f8fafb;
+            --accent: #ff6b6b;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 60px;
+            background: transparent;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        nav.scrolled {
+            background: rgba(255,255,255,0.97);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+        nav.scrolled .logo, nav.scrolled .nav-links a { color: var(--dark); }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 1px;
+        }
+        .logo span { color: var(--teal-light); }
+
+        .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--teal-light); }
+
+        .nav-search {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2bbfa4 0%, #1a9a85 50%, #157a6a 100%);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -20%;
+            width: 700px; height: 700px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 560px;
+            padding: 120px 60px 80px;
+            animation: fadeUp 0.9s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 50px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.4rem, 5vw, 3.5rem);
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            color: rgba(255,255,255,0.85);
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 36px;
+            max-width: 420px;
+        }
+
+        .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+
+        .btn-primary {
+            background: var(--white);
+            color: var(--teal-dark);
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--white);
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border: 2px solid rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .btn-outline:hover { background: rgba(255,255,255,0.15); }
+
+        .hero-image {
+            position: absolute;
+            right: 0; bottom: 0;
+            height: 90%;
+            z-index: 1;
+            opacity: 0.25;
+            object-fit: cover;
+        }
+
+        /* Wave divider */
+        .wave-bottom {
+            position: absolute;
+            bottom: -2px; left: 0; right: 0;
+        }
+
+        /* ── STATS STRIP ── */
+        .stats {
+            background: var(--white);
+            padding: 50px 60px;
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+        }
+        .stat-item { text-align: center; }
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--teal);
+        }
+        .stat-label { font-size: 0.85rem; color: var(--gray); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ── SECTIONS ── */
+        section { padding: 90px 60px; }
+        .section-tag {
+            display: inline-block;
+            color: var(--teal);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 16px;
+        }
+        .section-sub {
+            color: var(--gray);
+            font-size: 1rem;
+            line-height: 1.7;
+            max-width: 500px;
+            margin-bottom: 50px;
+        }
+
+        /* ── DEPARTMENTS ── */
+        #departments { background: var(--light-gray); }
+        .dept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+        .dept-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px 28px;
+            transition: transform 0.25s, box-shadow 0.25s;
+            border: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+        .dept-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(43,191,164,0.15); }
+        .dept-icon { font-size: 2.4rem; margin-bottom: 16px; }
+        .dept-name { font-weight: 700; font-size: 1.05rem; color: var(--dark); margin-bottom: 8px; }
+        .dept-desc { font-size: 0.88rem; color: var(--gray); line-height: 1.6; }
+        .dept-arrow {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--teal);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* ── DOCTORS ── */
+        .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 28px;
+        }
+        .doctor-card {
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .doctor-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+
+        .doctor-avatar {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+        .doctor-info { padding: 24px; }
+        .doctor-name { font-weight: 700; font-size: 1.05rem; color: var(--dark); }
+        .doctor-spec { color: var(--teal); font-size: 0.85rem; font-weight: 500; margin: 4px 0; }
+        .doctor-exp { color: var(--gray); font-size: 0.82rem; }
+        .doctor-btn {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            padding: 10px;
+            border-radius: 50px;
+            background: var(--teal-light);
+            color: var(--teal-dark);
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .doctor-btn:hover { background: var(--teal); color: #fff; }
+
+        /* ── ABOUT ── */
+        #about {
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 80px;
+        }
+        .about-visual {
+            flex: 0 0 420px;
+            height: 400px;
+            background: linear-gradient(135deg, var(--teal) 0%, #1a9a85 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .about-visual::after {
+            content: '';
+            position: absolute;
+            bottom: -30px; right: -30px;
+            width: 160px; height: 160px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        .about-text { flex: 1; }
+        .check-list { list-style: none; margin: 24px 0; }
+        .check-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        .check-list li::before {
+            content: '✓';
+            width: 24px; height: 24px;
+            background: var(--teal-light);
+            color: var(--teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        /* ── CONTACT ── */
+        #contact { background: var(--light-gray); }
+        .contact-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+        .contact-form {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--dark);
+            background: var(--white);
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus { border-color: var(--teal); }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--teal);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .submit-btn:hover { background: var(--teal-dark); transform: translateY(-2px); }
+
+        .contact-info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .contact-icon {
+            width: 44px; height: 44px;
+            background: var(--teal-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .contact-detail h4 { font-weight: 600; font-size: 0.9rem; color: var(--dark); }
+        .contact-detail p { font-size: 0.85rem; color: var(--gray); margin-top: 2px; }
+
+        /* ── FOOTER ── */
+        footer {
+            background: var(--dark);
+            color: rgba(255,255,255,0.7);
+            padding: 50px 60px 30px;
+        }
+        .footer-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        .footer-brand .logo { font-size: 1.4rem; display: block; margin-bottom: 12px; }
+        .footer-brand p { font-size: 0.85rem; line-height: 1.7; max-width: 280px; }
+        .footer-links h4 { color: white; font-weight: 600; margin-bottom: 16px; font-size: 0.9rem; }
+        .footer-links ul { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--teal); }
+        .footer-bottom { display: flex; justify-content: space-between; font-size: 0.82rem; }
+
+        /* ── SUCCESS MESSAGE ── */
+        .success-msg {
+            display: none;
+            background: var(--teal-light);
+            color: var(--teal-dark);
+            padding: 14px 20px;
+            border-radius: 10px;
+            margin-top: 16px;
+            font-weight: 500;
+        }
+        .success-msg.show { display: block; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            nav { padding: 16px 24px; }
+            .nav-links { display: none; }
+            section { padding: 60px 24px; }
+            .hero-content { padding: 100px 24px 60px; }
+            .stats { flex-wrap: wrap; gap: 40px; padding: 40px 24px; }
+            #about { flex-direction: column; gap: 40px; }
+            .about-visual { flex: none; width: 100%; }
+            .contact-wrapper { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            footer { padding: 40px 24px 24px; }
+            .footer-top { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+    <div class="logo">Medi<span>cure</span></div>
+    <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#departments">Departments</a></li>
+        <li><a href="#doctors">Doctors</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+    </ul>
+    <button class="nav-search">🔍</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+    <div class="hero-content">
+        <span class="hero-badge">🏥 Trusted Healthcare Since 2005</span>
+        <h1>We Provide Best Healthcare</h1>
+        <p>At Medicure, we provide the world's best health care services with world's best machines and expert doctors.</p>
+        <div class="hero-btns">
+            <a href="#contact" class="btn-primary">Book Appointment</a>
+            <a href="#about" class="btn-outline">Read More</a>
+        </div>
+    </div>
+    <svg class="wave-bottom" viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="white"/>
+    </svg>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+    <div class="stat-item">
+        <div class="stat-number">25K+</div>
+        <div class="stat-label">Happy Patients</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">120+</div>
+        <div class="stat-label">Expert Doctors</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">18+</div>
+        <div class="stat-label">Years Experience</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">98%</div>
+        <div class="stat-label">Success Rate</div>
+    </div>
+</div>
+
+<!-- DEPARTMENTS -->
+<section id="departments">
+    <span class="section-tag">What We Offer</span>
+    <h2 class="section-title">Our Departments</h2>
+    <p class="section-sub">We offer specialized care across multiple departments with cutting-edge technology and experienced physicians.</p>
+    <div class="dept-grid" id="deptGrid"></div>
+</section>
+
+<!-- DOCTORS -->
+<section id="doctors" style="background: #fff;">
+    <span class="section-tag">Meet Our Team</span>
+    <h2 class="section-title">Expert Doctors</h2>
+    <p class="section-sub">Our team of highly qualified medical professionals is dedicated to providing the best care for your health.</p>
+    <div class="doctors-grid" id="doctorsGrid"></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+    <div class="about-visual">🏥</div>
+    <div class="about-text">
+        <span class="section-tag">About Us</span>
+        <h2 class="section-title">Why Choose Medicure?</h2>
+        <p style="color: var(--gray); line-height: 1.8; margin-bottom: 8px;">We are committed to delivering compassionate, world-class healthcare services tailored to each patient's needs. With state-of-the-art technology and a team of dedicated professionals, your health is in safe hands.</p>
+        <ul class="check-list">
+            <li>Board-certified specialists across 15+ departments</li>
+            <li>24/7 emergency care and patient support</li>
+            <li>Advanced diagnostic and surgical technology</li>
+            <li>Patient-first approach with personalized treatment plans</li>
+            <li>Affordable pricing with insurance partnerships</li>
+        </ul>
+        <a href="#contact" class="btn-primary" style="margin-top: 8px;">Get In Touch</a>
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+    <span class="section-tag">Get In Touch</span>
+    <h2 class="section-title">Book An Appointment</h2>
+    <div class="contact-wrapper">
+        <div class="contact-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="fname" placeholder="John">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lname" placeholder="Doe">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="john@example.com">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="phone" placeholder="+91 9876543210">
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select id="dept">
+                    <option value="">Select Department</option>
+                    <option>Cardiology</option>
+                    <option>Neurology</option>
+                    <option>Pediatrics</option>
+                    <option>Orthopedics</option>
+                    <option>Oncology</option>
+                    <option>Emergency</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea id="message" placeholder="Describe your symptoms or concern..."></textarea>
+            </div>
+            <button class="submit-btn" onclick="submitForm()">Book Appointment</button>
+            <div class="success-msg" id="successMsg">✅ Appointment booked! We'll contact you shortly.</div>
+        </div>
+        <div class="contact-info">
+            <h3>Contact Information</h3>
+            <p style="color: var(--gray); margin-bottom: 32px; line-height: 1.7;">Reach out to us anytime. Our team is available 24/7 to answer your questions and help you schedule your visit.</p>
+            <div class="contact-item">
+                <div class="contact-icon">📍</div>
+                <div class="contact-detail">
+                    <h4>Our Location</h4>
+                    <p>123 Health Avenue, Medical District<br>Chennai, Tamil Nadu 600001</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">📞</div>
+                <div class="contact-detail">
+                    <h4>Phone Number</h4>
+                    <p>+91 98765 43210<br>+91 44 2345 6789</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">✉️</div>
+                <div class="contact-detail">
+                    <h4>Email Address</h4>
+                    <p>info@medicure.com<br>support@medicure.com</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">🕐</div>
+                <div class="contact-detail">
+                    <h4>Working Hours</h4>
+                    <p>Mon - Sat: 8:00 AM – 8:00 PM<br>Emergency: 24/7</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-top">
+        <div class="footer-brand">
+            <span class="logo" style="color:white;">Medi<span style="color:#2bbfa4;">cure</span></span>
+            <p>Providing world-class healthcare services with compassion and cutting-edge technology since 2005.</p>
+        </div>
+        <div class="footer-links">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#departments">Departments</a></li>
+                <li><a href="#doctors">Our Doctors</a></li>
+            </ul>
+        </div>
+        <div class="footer-links">
+            <h4>Services</h4>
+            <ul>
+                <li><a href="#">Emergency Care</a></li>
+                <li><a href="#">Lab Tests</a></li>
+                <li><a href="#">Health Packages</a></li>
+                <li><a href="#">Telemedicine</a></li>
+            </ul>
+        </div>
+        <div class="footer-links">
+            <h4>Contact</h4>
+            <ul>
+                <li><a href="#">Chennai, Tamil Nadu</a></li>
+                <li><a href="#">+91 98765 43210</a></li>
+                <li><a href="#">info@medicure.com</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2024 Medicure Healthcare. All rights reserved.</p>
+        <p>Built with ❤️ for better health</p>
+    </div>
+</footer>
+
+<script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Departments
+    const departments = [
+        { name: "Cardiology", icon: "❤️", description: "Heart & cardiovascular care" },
+        { name: "Neurology", icon: "🧠", description: "Brain & nervous system" },
+        { name: "Pediatrics", icon: "👶", description: "Child healthcare specialists" },
+        { name: "Orthopedics", icon: "🦴", description: "Bone & joint treatment" },
+        { name: "Oncology", icon: "🔬", description: "Cancer diagnosis & treatment" },
+        { name: "Emergency", icon: "🚑", description: "24/7 emergency services" },
+    ];
+    document.getElementById('deptGrid').innerHTML = departments.map(d => `
+        <div class="dept-card">
+            <div class="dept-icon">${d.icon}</div>
+            <div class="dept-name">${d.name}</div>
+            <div class="dept-desc">${d.description}</div>
+            <span class="dept-arrow">Learn more →</span>
+        </div>
+    `).join('');
+
+    // Doctors
+    const doctors = [
+        { name: "Dr. Sarah Johnson", spec: "Cardiologist", exp: "15 years", emoji: "👩‍⚕️" },
+        { name: "Dr. Michael Chen", spec: "Neurologist", exp: "12 years", emoji: "👨‍⚕️" },
+        { name: "Dr. Emily Davis", spec: "Pediatrician", exp: "10 years", emoji: "👩‍⚕️" },
+        { name: "Dr. Robert Wilson", spec: "Orthopedic", exp: "18 years", emoji: "👨‍⚕️" },
+    ];
+    document.getElementById('doctorsGrid').innerHTML = doctors.map(d => `
+        <div class="doctor-card">
+            <div class="doctor-avatar">${d.emoji}</div>
+            <div class="doctor-info">
+                <div class="doctor-name">${d.name}</div>
+                <div class="doctor-spec">${d.spec}</div>
+                <div class="doctor-exp">Experience: ${d.exp}</div>
+                <button class="doctor-btn">Book Appointment</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Contact form
+    function submitForm() {
+        const name = document.getElementById('fname').value;
+        if (!name) { alert('Please fill in your name'); return; }
+        const msg = document.getElementById('successMsg');
+        msg.classList.add('show');
+        setTimeout(() => msg.classList.remove('show'), 5000);
+        ['fname','lname','email','phone','message'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+</script>
+</body>
+</html>
