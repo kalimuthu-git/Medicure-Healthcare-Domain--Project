@@ -1,0 +1,92 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "medicure-healthcare-project"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage ("Git Checkout") {
+            steps {
+                git branch: 'main', 
+                credentialsId: '123', 
+                url: 'https://github.com/kalimuthu-git/Medicure-Healthcare-Domain--Project.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                . venv/bin/activate
+                pytest tests/ -v
+                '''
+            }
+        }
+        
+        stage ("Build Docker Image") {
+            steps {
+                sh '''
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                '''
+            }
+        }
+
+        stage ("Push Docker Image") {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: '12',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                    docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: '12',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                    docker stop medicure-container || true
+                    docker rm medicure-container || true
+
+                    docker pull $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+
+                    docker run -d -p 9090:5000 \
+                    --name medicure-container \
+                    $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                    '''
+                }
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh '''
+                docker system prune -f
+                '''
+            }
+        }
+    }
+}
