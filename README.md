@@ -233,24 +233,28 @@ In Jenkins job → **Configure → Triggers**
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "medicure-healthcare-project"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
     stages {
 
-        stage('Git Checkout') {
+        stage ("Git Checkout") {
             steps {
-                git branch: 'main',
-                    credentialsId: '123',
-                    url: 'https://github.com/kalimuthu-git/Medicure-Healthcare-Domain--Project.git'
+                git branch: 'main', 
+                credentialsId: '123', 
+                url: 'https://github.com/kalimuthu-git/Medicure-Healthcare-Domain--Project.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                    echo "✅ Dependencies installed"
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
                 '''
             }
         }
@@ -258,34 +262,31 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    . venv/bin/activate
-                    pytest tests/ -v
-                    echo "✅ All tests passed"
+                . venv/bin/activate
+                pytest tests/ -v
                 '''
             }
         }
-
-        stage('Build Docker Image') {
+        
+        stage ("Build Docker Image") {
             steps {
                 sh '''
-                    docker build -t medicure-health-care:v1 .
-                    echo "✅ Docker image built"
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
                 '''
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage ("Push Docker Image") {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
+                    credentialsId: '12',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker tag medicure-health-care:v1 $DOCKER_USER/medicure-healthcare-project:v1
-                        docker push $DOCKER_USER/medicure-healthcare-project:v1
-                        echo "✅ Pushed to Docker Hub"
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                    docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
                     '''
                 }
             }
@@ -293,26 +294,31 @@ pipeline {
 
         stage('Deploy Container') {
             steps {
-                sh '''
+                withCredentials([usernamePassword(
+                    credentialsId: '12',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
                     docker stop medicure-container || true
-                    docker rm   medicure-container || true
-                    docker pull kalimuthudevops/medicure-healthcare-project:v1
-                    docker run -d \
-                        -p 9090:5000 \
-                        --name medicure-container \
-                        kalimuthudevops/medicure-healthcare-project:v1
-                    echo "✅ App deployed on port 9090"
-                '''
+                    docker rm medicure-container || true
+
+                    docker pull $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+
+                    docker run -d -p 9090:5000 \
+                    --name medicure-container \
+                    $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                    '''
+                }
             }
         }
-    }
 
-    post {
-        success {
-            echo "✅ PIPELINE SUCCESS — http://43.205.211.204:9090"
-        }
-        failure {
-            echo "❌ PIPELINE FAILED — Check logs"
+        stage('Cleanup') {
+            steps {
+                sh '''
+                docker system prune -f
+                '''
+            }
         }
     }
 }
