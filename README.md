@@ -17,7 +17,7 @@
 
 | Service | URL |
 |---------|-----|
-| 🌍 Website | `http://43.205.211.204:9090` |
+| 🌍 Website | `http://43.205.211.204:30007` |
 | 🔧 Jenkins | `http://13.232.71.59:8080` |
 | 🐳 Docker Hub | `kalimuthudevops/medicure-healthcare-project:12` |
 | 📦 GitHub | `github.com/kalimuthu-git/Medicure-Healthcare-Domain--Project` |
@@ -32,7 +32,6 @@ MEDICURE HEALTH CARE-PROJECT/
 ├── requirements.txt          # Python dependencies
 ├── Dockerfile                # Multi-stage Docker image build
 ├── Jenkinsfile               # CI/CD Pipeline (all stages)
-├── docker-compose.yml        # App + Nginx together
 ├── deployment.yaml           # K8s Deployment — 2 pods
 ├── service.yaml              # K8s Service — NodePort
 ├── templates/
@@ -97,10 +96,10 @@ docker build -t medicure-healthcare-project:v1 .
 # Run container
 docker run -d \
   --name medicure-container \
-  -p 9090:5000 \
+  -p 30007:5000 \
   medicure-healthcare-project:v1
 
-# Open browser → http://localhost:9090
+# Open browser → http://localhost:30007
 
 # Check container
 docker ps
@@ -200,7 +199,7 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 5000
-      nodePort: 30080
+      nodePort: 30007
 ```
 
 ---
@@ -344,15 +343,6 @@ pipeline {
             }
         }
     }
-
-    post {
-        success {
-            echo "✅ PIPELINE SUCCESS — Medicure is live on Kubernetes!"
-        }
-        failure {
-            echo "❌ PIPELINE FAILED — Check logs above"
-        }
-    }
 }
 ```
 
@@ -407,7 +397,7 @@ Pull and run directly:
 
 ```bash
 docker pull kalimuthudevops/medicure-healthcare-project:12
-docker run -d -p 9090:5000 \
+docker run -d -p 30007:5000 \
   --name medicure-container \
   kalimuthudevops/medicure-healthcare-project:12
 ```
