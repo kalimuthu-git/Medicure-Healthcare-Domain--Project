@@ -3,10 +3,13 @@
 ![Project Status](https://img.shields.io/badge/Status-Live-brightgreen)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
 ![Jenkins](https://img.shields.io/badge/CI%2FCD-Jenkins-red)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.30.14-326CE5)
 ![Python](https://img.shields.io/badge/Python-3.11-yellow)
 ![AWS](https://img.shields.io/badge/Cloud-AWS%20EC2-orange)
+![GitHub Webhook](https://img.shields.io/badge/Webhook-Enabled-success)
 
-> A full-stack healthcare web application with a complete DevOps pipeline using **Flask + Docker + Jenkins + AWS EC2**.
+> A full-stack healthcare web application with a complete DevOps pipeline using
+> **Flask + Docker + Jenkins + Kubernetes + AWS EC2 + GitHub Webhook**
 
 ---
 
@@ -15,8 +18,8 @@
 | Service | URL |
 |---------|-----|
 | 🌍 Website | `http://43.205.211.204:9090` |
-| 🔧 Jenkins | `http://43.205.211.204:8080` |
-| 🐳 Docker Hub | `kalimuthudevops/medicure-healthcare-project:v1` |
+| 🔧 Jenkins | `http://13.232.71.59:8080` |
+| 🐳 Docker Hub | `kalimuthudevops/medicure-healthcare-project:12` |
 | 📦 GitHub | `github.com/kalimuthu-git/Medicure-Healthcare-Domain--Project` |
 
 ---
@@ -30,8 +33,10 @@ MEDICURE HEALTH CARE-PROJECT/
 ├── Dockerfile                # Multi-stage Docker image build
 ├── Jenkinsfile               # CI/CD Pipeline (all stages)
 ├── docker-compose.yml        # App + Nginx together
+├── deployment.yaml           # K8s Deployment — 2 pods
+├── service.yaml              # K8s Service — NodePort
 ├── templates/
-│   └── index.html            # Medicure frontend UI (HTML/CSS/JS)
+│   └── index.html            # Medicure frontend UI
 ├── nginx/
 │   └── nginx.conf            # Nginx reverse proxy config
 ├── tests/
@@ -50,10 +55,12 @@ MEDICURE HEALTH CARE-PROJECT/
 | WSGI Server | Gunicorn |
 | Reverse Proxy | Nginx |
 | Containerization | Docker |
+| Container Orchestration | Kubernetes v1.30.14 |
 | CI/CD | Jenkins |
 | Image Registry | Docker Hub |
 | Cloud | AWS EC2 (c7i-flex.large) |
 | Version Control | Git + GitHub |
+| Auto Trigger | GitHub Webhook |
 | Testing | Pytest + pytest-flask |
 
 ---
@@ -67,12 +74,8 @@ cd Medicure-Healthcare-Domain--Project
 
 # 2. Create virtual environment
 python3 -m venv venv
-
-# Linux/Mac
-source venv/bin/activate
-
-# Windows
-venv\Scripts\activate
+source venv/bin/activate      # Linux/Mac
+venv\Scripts\activate         # Windows
 
 # 3. Install dependencies
 pip install -r requirements.txt
@@ -80,8 +83,7 @@ pip install -r requirements.txt
 # 4. Run the app
 python app.py
 
-# 5. Open browser
-# http://localhost:5000
+# 5. Open browser → http://localhost:5000
 ```
 
 ---
@@ -89,38 +91,116 @@ python app.py
 ## 🐳 Run With Docker
 
 ```bash
-# Build the Docker image
-docker build -t medicure-health-care:v1 .
+# Build image
+docker build -t medicure-healthcare-project:v1 .
 
-# Run the container
+# Run container
 docker run -d \
   --name medicure-container \
   -p 9090:5000 \
-  medicure-health-care:v1
+  medicure-healthcare-project:v1
 
-# Open browser
-# http://localhost:9090
+# Open browser → http://localhost:9090
 
-# Check running containers
+# Check container
 docker ps
 
-# Check logs
+# View logs
 docker logs medicure-container
 ```
 
 ---
 
-## 🐳 Run With Docker Compose (App + Nginx)
+## ☸️ Deploy With Kubernetes
 
 ```bash
-# Start all services
-docker-compose up -d
+# Apply Deployment (creates 2 pods)
+kubectl apply -f deployment.yaml
 
-# App  → http://localhost:5000
-# Nginx → http://localhost:80
+# Apply Service (exposes app)
+kubectl apply -f service.yaml
 
-# Stop all services
-docker-compose down
+# Check pods status
+kubectl get pods
+
+# Check services
+kubectl get svc
+
+# Check deployments
+kubectl get deployments
+
+# View pod logs
+kubectl logs -l app=medicure
+
+# Scale pods
+kubectl scale deployment medicure-app --replicas=3
+
+# Update image
+kubectl set image deployment/medicure-app \
+  medicure-container=kalimuthudevops/medicure-healthcare-project:13
+```
+
+### Kubernetes Pods — Running ✅
+
+```
+NAME                                READY   STATUS    RESTARTS   AGE
+medicure-app-57b4b46bd7-np5zs      1/1     Running   0          29s
+medicure-app-57b4b46bd7-pwz82      1/1     Running   0          31s
+```
+
+---
+
+## 📄 Kubernetes Files
+
+### deployment.yaml
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medicure-app
+  labels:
+    app: medicure
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: medicure
+  template:
+    metadata:
+      labels:
+        app: medicure
+    spec:
+      containers:
+        - name: medicure-container
+          image: kalimuthudevops/medicure-healthcare-project:12
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+```
+
+### service.yaml
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: medicure-service
+spec:
+  type: NodePort
+  selector:
+    app: medicure
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+      nodePort: 30080
 ```
 
 ---
@@ -128,25 +208,21 @@ docker-compose down
 ## 🧪 Run Tests
 
 ```bash
-# Activate virtual environment
-source venv/bin/activate     # Linux/Mac
-venv\Scripts\activate        # Windows
-
-# Run all tests
+source venv/bin/activate
 pytest tests/ -v
 ```
 
-### Test Results
+### Test Results ✅
 
 ```
-tests/test_app.py::test_home_page          PASSED ✅
-tests/test_app.py::test_health_check       PASSED ✅
-tests/test_app.py::test_get_doctors        PASSED ✅
-tests/test_app.py::test_get_departments    PASSED ✅
-tests/test_app.py::test_contact_form       PASSED ✅
-tests/test_app.py::test_404_not_found      PASSED ✅
+tests/test_app.py::test_home_page          PASSED ✅  [ 16%]
+tests/test_app.py::test_health_check       PASSED ✅  [ 33%]
+tests/test_app.py::test_get_doctors        PASSED ✅  [ 50%]
+tests/test_app.py::test_get_departments    PASSED ✅  [ 66%]
+tests/test_app.py::test_contact_form       PASSED ✅  [ 83%]
+tests/test_app.py::test_404_not_found      PASSED ✅  [100%]
 
-6 passed in 0.09s
+============================== 6 passed in 0.10s ==============================
 ```
 
 ---
@@ -160,72 +236,41 @@ tests/test_app.py::test_404_not_found      PASSED ✅
 | GET | `/doctors` | List all doctors (JSON) |
 | GET | `/departments` | List all departments (JSON) |
 | POST | `/contact` | Submit appointment form |
-| GET | `/about` | About page |
 
 ---
 
-## 🔧 Jenkins CI/CD Pipeline Setup
+## 🔗 GitHub Webhook Setup
 
-### Prerequisites
+Webhook automatically triggers Jenkins pipeline on every `git push`.
 
-- Jenkins installed and running on AWS EC2
-- Docker installed on Jenkins server
-- GitHub repository connected
-- Docker Hub account
+### Steps to Configure
 
-### Step 1 — Install Jenkins Plugins
-
-- Git Plugin
-- Pipeline Plugin
-- Docker Pipeline
-- GitHub Integration Plugin
-
-### Step 2 — Add Credentials in Jenkins
-
-Go to: **Manage Jenkins → Credentials → Global → Add Credentials**
-
-| Credential | Kind | ID |
-|-----------|------|----|
-| GitHub token | Username with password | `123` |
-| Docker Hub | Username with password | `dockerhub-creds` |
-
-### Step 3 — Configure GitHub Webhook
-
-In your GitHub repo → **Settings → Webhooks → Add webhook**
+1. Go to GitHub repo → **Settings → Webhooks → Add webhook**
+2. Fill in:
 
 ```
-Payload URL : http://43.205.211.204:8080/github-webhook/
-Content type: application/json
-Event       : Just the push event
+Payload URL  : http://13.232.71.59:8080/github-webhook/
+Content type : application/json
+Event        : Just the push event ✅
+Active       : ✅ Enabled
 ```
 
-### Step 4 — Enable Jenkins Trigger
+3. Click **Add webhook**
 
-In Jenkins job → **Configure → Triggers**
+✅ **Status:** `"Okay, that hook was successfully created!"`
 
-☑️ **GitHub hook trigger for GITScm polling**
+### How it Works
 
-### Step 5 — Run the Pipeline!
+```
+git push → GitHub detects push
+        → sends POST to Jenkins webhook URL
+        → Jenkins pipeline triggers automatically
+        → All stages run without manual intervention
+```
 
 ---
 
-## 🔄 Jenkins Pipeline Stages
-
-```
-📥 Git Checkout
-      ↓
-📦 Install Dependencies
-      ↓
-🧪 Run Tests (6 pytest tests)
-      ↓
-🐳 Build Docker Image
-      ↓
-🔐 Push to Docker Hub
-      ↓
-🚀 Deploy Container on EC2
-      ↓
-❤️  Health Check (/health endpoint)
-```
+## 🔄 Jenkins CI/CD Pipeline
 
 ### Complete Jenkinsfile
 
@@ -235,26 +280,26 @@ pipeline {
 
     environment {
         IMAGE_NAME = "medicure-healthcare-project"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_TAG  = "${BUILD_NUMBER}"
     }
 
     stages {
 
-        stage ("Git Checkout") {
+        stage('Git Checkout') {
             steps {
-                git branch: 'main', 
-                credentialsId: '123', 
-                url: 'https://github.com/kalimuthu-git/Medicure-Healthcare-Domain--Project.git'
+                git branch: 'main',
+                    credentialsId: '12',
+                    url: 'https://github.com/kalimuthu-git/Medicure-Healthcare-Domain--Project.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
                 '''
             }
         }
@@ -262,66 +307,68 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                . venv/bin/activate
-                pytest tests/ -v
-                '''
-            }
-        }
-        
-        stage ("Build Docker Image") {
-            steps {
-                sh '''
-                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                    . venv/bin/activate
+                    pytest tests/ -v
                 '''
             }
         }
 
-        stage ("Push Docker Image") {
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+            }
+        }
+
+        stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: '12',
+                    credentialsId: '123',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
-                    docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                        docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
                     '''
                 }
             }
         }
 
-        stage('Deploy Container') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: '12',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                    docker stop medicure-container || true
-                    docker rm medicure-container || true
-
-                    docker pull $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
-
-                    docker run -d -p 9090:5000 \
-                    --name medicure-container \
-                    $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
-                    '''
-                }
-            }
-        }
-
-        stage('Cleanup') {
+        stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                docker system prune -f
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
                 '''
             }
         }
     }
+
+    post {
+        success {
+            echo "✅ PIPELINE SUCCESS — Medicure is live on Kubernetes!"
+        }
+        failure {
+            echo "❌ PIPELINE FAILED — Check logs above"
+        }
+    }
 }
+```
+
+---
+
+## ✅ Pipeline Stages — All Completed
+
+```
+📥 Git Checkout              ✅  Code pulled from GitHub
+📦 Install Dependencies      ✅  Flask, Gunicorn, Pytest installed
+🧪 Run Tests                 ✅  6/6 tests passed in 0.10s
+🐳 Build Docker Image        ✅  medicure-healthcare-project:12 (17 steps)
+🔐 Push to Docker Hub        ✅  kalimuthudevops/medicure-healthcare-project:12
+☸️  Deploy to Kubernetes      ✅  deployment.apps/medicure-app created
+                                  service/medicure-service created
+                                  2 pods Running ✅
 ```
 
 ---
@@ -334,16 +381,15 @@ pipeline {
 | Instance Type | c7i-flex.large |
 | Region | ap-south-1 (Mumbai) |
 | OS | Ubuntu |
-| Security Group | Port 8080 (Jenkins), 9090 (App) |
 
 ### Security Group Inbound Rules
 
-| Port | Protocol | Source | Purpose |
-|------|----------|--------|---------|
-| 22 | SSH | Your IP | Server access |
-| 8080 | TCP | 0.0.0.0/0 | Jenkins UI |
-| 9090 | TCP | 0.0.0.0/0 | Medicure App |
-| 5000 | TCP | 0.0.0.0/0 | Flask (internal) |
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 22 | SSH | Server access |
+| 8080 | TCP | Jenkins UI |
+| 9090 | TCP | Medicure App |
+| 30080 | TCP | Kubernetes NodePort |
 
 ---
 
@@ -351,16 +397,34 @@ pipeline {
 
 ```
 Repository : kalimuthudevops/medicure-healthcare-project
-Tag        : v1
+Tag        : 12
 Size       : 56.8 MB
 OS         : Linux
+Pushed     : ✅ Successfully
 ```
 
-Pull and run from Docker Hub:
+Pull and run directly:
 
 ```bash
-docker pull kalimuthudevops/medicure-healthcare-project:v1
-docker run -d -p 9090:5000 --name medicure-container kalimuthudevops/medicure-healthcare-project:v1
+docker pull kalimuthudevops/medicure-healthcare-project:12
+docker run -d -p 9090:5000 \
+  --name medicure-container \
+  kalimuthudevops/medicure-healthcare-project:12
+```
+
+---
+
+## 🔧 kubectl Installation (on EC2)
+
+```bash
+# Install kubectl
+sudo apt update
+sudo apt install -y kubectl
+
+# Verify
+kubectl version --client
+# Client Version: v1.30.14
+# Kustomize Version: v5.0.4
 ```
 
 ---
@@ -368,37 +432,48 @@ docker run -d -p 9090:5000 --name medicure-container kalimuthudevops/medicure-he
 ## 👨‍💻 Complete DevOps Flow
 
 ```
-Developer writes code
-      ↓
-git push → GitHub repo
-      ↓
-GitHub Webhook triggers Jenkins
-      ↓
-Jenkins Pipeline starts automatically
-      ↓
-Install deps → Run tests → Build Docker image
-      ↓
-Push image to Docker Hub
-      ↓
-Pull image on EC2 → Run container
-      ↓
-Medicure app live at http://43.205.211.204:9090 🌐
+Developer writes code on local machine
+          ↓
+git push → GitHub repository
+          ↓
+GitHub Webhook (push event)
+          ↓  POST → http://13.232.71.59:8080/github-webhook/
+Jenkins Pipeline triggers automatically
+          ↓
+  ┌───────────────────────────┐
+  │  Install Dependencies     │
+  │  Run Pytest (6/6 ✅)      │
+  │  Build Docker Image       │
+  │  Push to Docker Hub       │
+  │  kubectl apply            │
+  └───────────────────────────┘
+          ↓
+Kubernetes Cluster (AWS EC2)
+  ┌──────────────────────────────────────┐
+  │  Pod 1: medicure-app-...-np5zs  ✅  │
+  │  Pod 2: medicure-app-...-pwz82  ✅  │
+  └──────────────────────────────────────┘
+          ↓
+  Medicure Website LIVE 🌐
+  http://43.205.211.204:9090
 ```
 
 ---
 
-## 📸 Project Screenshots
+## 📸 Project Achievements
 
-| Stage | Description |
-|-------|-------------|
-| Git Checkout | Code pulled from GitHub successfully |
-| Install & Test | 6/6 pytest tests passed |
-| Docker Build | 17-step multi-stage build completed |
-| Docker Hub Push | Image pushed — 56.8MB |
-| Deploy | Container running healthy on EC2 |
-| Live Website | Medicure running at port 9090 |
-| Jenkins Trigger | GitHub webhook auto-trigger enabled |
-| AWS EC2 | Instance running — 3/3 checks passed |
+| Component | Status |
+|-----------|--------|
+| GitHub Repo | ✅ Created & pushed |
+| GitHub Webhook | ✅ Successfully created |
+| Jenkins Pipeline | ✅ All 6 stages passed |
+| Docker Image Built | ✅ 17-step multi-stage build |
+| Docker Hub Push | ✅ Image live (56.8MB) |
+| kubectl installed | ✅ v1.30.14 |
+| K8s Deployment | ✅ medicure-app created |
+| K8s Service | ✅ medicure-service created |
+| K8s Pods | ✅ 2/2 Running |
+| Website Live | ✅ Accessible on port 9090 |
 
 ---
 
@@ -410,4 +485,5 @@ Medicure app live at http://43.205.211.204:9090 🌐
 
 ---
 
-**Medicure Healthcare © 2026 — Built with ❤️ using DevOps**
+**Medicure Healthcare © 2026**
+**Built with ❤️ using Flask + Docker + Jenkins + Kubernetes + AWS EC2 + GitHub Webhook**
