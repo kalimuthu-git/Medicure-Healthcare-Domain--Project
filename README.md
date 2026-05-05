@@ -9,7 +9,7 @@
 ![GitHub Webhook](https://img.shields.io/badge/Webhook-Enabled-success)
 
 > A full-stack healthcare web application with a complete DevOps pipeline using
-> **Flask + Docker + Jenkins + Kubernetes + AWS EC2 + GitHub Webhook**
+> **Flask + Docker + Jenkins + Kubernetes + AWS EC2 + GitHub Webhook** 
 
 ---
 
