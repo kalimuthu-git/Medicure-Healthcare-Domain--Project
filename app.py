@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
-
 doctors = [
     {"id": 1, "name": "Dr. Sarah Johnson", "specialty": "Cardiologist", "experience": "15 years", "image": "doctor1.jpg"},
     {"id": 2, "name": "Dr. Michael Chen", "specialty": "Neurologist", "experience": "12 years", "image": "doctor2.jpg"},
