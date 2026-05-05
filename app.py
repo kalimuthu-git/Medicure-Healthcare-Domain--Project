@@ -8,7 +8,6 @@ doctors = [
     {"id": 3, "name": "Dr. Emily Davis", "specialty": "Pediatrician", "experience": "10 years", "image": "doctor3.jpg"},
     {"id": 4, "name": "Dr. Robert Wilson", "specialty": "Orthopedic", "experience": "18 years", "image": "doctor4.jpg"},
 ]
-
 departments = [
     {"name": "Cardiology", "icon": "❤️", "description": "Heart & cardiovascular care"},
     {"name": "Neurology", "icon": "🧠", "description": "Brain & nervous system"},
